@@ -1,0 +1,17 @@
+Options: Array
+(
+    [0] => dupa
+    [1] => elo
+    [2] => super
+    [3] => duper
+)
+
+Poll ID: 15
+Option: dupa
+Insert success: 1
+Option: elo
+Insert success: 1
+Option: super
+Insert success: 1
+Option: duper
+Insert success: 1

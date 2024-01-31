@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .admin-page {
+            width: 300px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .logout-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #d9534f; /* Red color */
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .admin-page h2 {
+            text-align: center;
+            color: #333;
+        }
+        .admin-page label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .admin-page input[type="text"],
+        .admin-page input[type="password"],
+        .admin-page select {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .admin-page input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        .admin-page input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-page">
+        <!-- Add User Form -->
+        <div id="addUserForm">
+            <h2>Add User</h2>
+            <form id="addUser" action="add_user.php" method="post">
+                <label for="newUsername">Username:</label>
+                <input type="text" id="newUsername" name="username">
+                <label for="newPassword">Password:</label>
+                <input type="password" id="newPassword" name="password">
+                <label for="newPermission">Permission Level:</label>
+                <select id="newPermission" name="permission">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                    <option value="staff">Staff</option>
+                </select>
+                <input type="submit" value="Add User">
+            </form>
+            <div id="addUserMessage"></div>
+        </div>
+
+
+        <!-- Update User Form -->
+        <div id="updateUserForm">
+            <h2>Update User</h2>
+            <form id="updateUser" action="update_user.php" method="post">
+                <label for="updateUsername">Username:</label>
+                <input type="text" id="updateUsername" name="username">
+                <label for="changePassword">Change Password:</label>
+                <input type="checkbox" id="changePassword" onclick="togglePasswordField()">
+                <label for="updatePassword">New Password:</label>
+                <input type="password" id="updatePassword" name="password" disabled>
+                <label for="updatePermission">New Permission Level:</label>
+                <select id="updatePermission" name="permission">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                    <option value="staff">Staff</option>
+                </select>
+                <input type="submit" value="Update User">
+            </form>
+            <div id="updateUserMessage"></div>
+        </div>
+
+        <button class="logout-button" onclick="logout()">Logout</button>
+    
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            fetch('getRole.php')
+                .then(response => response.json())
+                .then(role => {
+                    if (role !== 'admin') {
+                        window.location.href = 'login.html'; // Redirect non-admin users to another page
+                    }
+                });
+
+
+
+            $("#addUser").submit(function(event){
+                event.preventDefault();
+
+                // Hide the message div immediately when the form is submitted
+                $("#addUserMessage").hide();
+
+                $.ajax({
+                    type: "POST",
+                    url: "add_user.php",
+                    data: $(this).serialize(),
+                    success: function(response){
+                        if (response.startsWith('Error:')) {
+                            alert(response);
+                        } else {
+                            // Show the message div after a delay of 1 second (1000 milliseconds)
+                            $("#addUserMessage").text(response).delay(1000).show(0);
+                        }
+                    }
+                });
+            });
+
+            $("#updateUser").submit(function(event){
+                event.preventDefault();
+
+                // Hide the message div immediately when the form is submitted
+                $("#updateUserMessage").hide();
+
+                $.ajax({
+                    type: "POST",
+                    url: "update_user.php",
+                    data: $(this).serialize(),
+                    success: function(response){
+                        if (response.startsWith('Error:')) {
+                            alert(response);
+                        } else {
+                            // Show the message div after a delay of 1 second (1000 milliseconds)
+                            $("#updateUserMessage").text(response).delay(1000).show(0);
+                        }
+                    }
+                });
+            });
+
+            window.togglePasswordField = function() {
+                var passwordField = document.getElementById('updatePassword');
+                var checkbox = document.getElementById('changePassword');
+                if (checkbox.checked) {
+                    passwordField.disabled = false;
+                } else {
+                    passwordField.disabled = true;
+                }
+            }
+        });
+        function logout() {
+            // Redirect to the logout page or perform any other logout actions
+            window.location.href = 'logout.php';
+        }
+    </script>
+</body>
+</html>

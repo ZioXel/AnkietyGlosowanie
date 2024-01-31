@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Poll Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .poll-details {
+            width: 300px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+        }
+        .poll-details h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .poll-details p {
+            margin-bottom: 10px;
+            color: #666;
+        }
+        .poll-details ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .poll-details li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="poll-details">
+        <h2>Poll Name</h2>
+        <p>Description</p>
+        <form action="submitVote.php" method="post">
+            <ul>
+                <li>
+                    <input type="checkbox" id="option1" name="option1">
+                    <label for="option1">Option 1</label>
+                    <span>Votes: 10 (50%)</span>
+                </li>
+                <li>
+                    <input type="checkbox" id="option2" name="option2">
+                    <label for="option2">Option 2</label>
+                    <span>Votes: 20 (100%)</span>
+                </li>
+                <li>
+                    <input type="checkbox" id="option3" name="option3">
+                    <label for="option3">Option 3</label>
+                    <span>Votes: 30 (150%)</span>
+                </li>
+            </ul>
+            <input type="submit" value="Submit Vote">
+        </form>
+        <p>Quorum: Quorum Value</p>
+        <p>Quorum Met: Yes/No</p>
+    </div>
+</body>
+</html>

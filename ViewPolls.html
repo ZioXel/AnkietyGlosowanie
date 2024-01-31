@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Available Pools</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .polls-container {
+            width: 50vw;
+            padding: 20px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+        }
+        .polls-container h2 {
+            text-align: center;
+            color: #333;
+        }
+        .polls-container label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .polls-container input[type="text"],
+        .polls-container input[type="number"],
+        .polls-container textarea {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .polls-container input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        .polls-container input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .poll {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.1);
+        }
+        .poll h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .poll p {
+            margin-bottom: 10px;
+            color: #666;
+        }
+        .poll a {
+            display: inline-block;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+        }
+        .poll a:hover {
+            background-color: #0056b3;
+        }
+        #pollsContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Adjust the 300px to suit your needs */
+            grid-gap: 10px; /* Adjust the 10px to suit your needs */
+            max-height: 600px; /* Adjust this value to suit your needs */
+            overflow-y: auto;
+        }
+        .logout-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .logout-container button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px;
+            cursor: pointer;
+        }
+        .logout-container button:hover {
+            background-color: #c82333;
+        }
+        .voted {
+            color: blue;
+        }
+    </style>
+
+    <script>
+        window.addEventListener('pageshow', function() {
+            if(!window.location.hash) {
+                window.location = window.location + '#loaded';
+                window.location.reload();
+            } else {
+                fetch('getPolls.php')
+                    .then(response => response.json())
+                    .then(polls => {
+                    const pollsContainer = document.querySelector('.polls-container');
+                    pollsContainer.innerHTML = '';
+                    for (const poll of polls) {
+                        const pollDiv = document.createElement('div');
+                        pollDiv.className = 'poll';
+                        const options = poll.options.split('; ');
+                        const totalVotes = options.reduce((total, option) => {
+                            const votes = parseInt(option.split(' (')[1].replace(' votes)', ''));
+                            return total + (isNaN(votes) ? 0 : votes);
+                        }, 0);
+                        const quorumMet = totalVotes >= poll.quorum;
+                        pollDiv.innerHTML = `
+                            <h2>${poll.name}</h2>
+                            <p>${poll.description}</p>
+                            <ul>
+                                ${options.map((option, index) => {
+                                    const [name, votes] = option.split(' (');
+                                    const voteCount = votes.replace(' votes)', '');
+                                    const percentage = totalVotes > 0 ? (parseInt(voteCount) / totalVotes * 100).toFixed(2) : 0;
+                                    const votedClass = poll.user_vote === index ? 'voted' : '';
+                                    return `<li class="${votedClass}">${name} - ${voteCount} votes (${percentage}%)</li>`;
+                                }).join('')}
+                            </ul>
+                            <p style="color: ${quorumMet ? 'green' : 'red'};">Quorum: ${poll.quorum}</p>
+                            <a href="vote.php?pollId=${poll.id}">Vote</a>
+                        `;
+                        pollsContainer.appendChild(pollDiv);
+                    }
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="polls-container">
+        <!-- The polls will be inserted here by the JavaScript code -->
+    </div>
+
+    <div class="logout-container">
+        <form method="POST" action="logout.php">
+            <button type="submit">Logout</button>
+        </form>
+</body>
+</html>

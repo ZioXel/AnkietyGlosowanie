@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Staff Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .staff-page {
+            width: 50vw;
+            padding: 20px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .logout-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #d9534f; /* Red color */
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .staff-page h2 {
+            text-align: center;
+            color: #333;
+        }
+        .staff-page label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .staff-page input[type="text"],
+        .staff-page input[type="number"],
+        .staff-page textarea {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .staff-page input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        .staff-page input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .staff-page .poll {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.1);
+        }
+        .staff-page .poll h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .staff-page .poll p {
+            margin-bottom: 10px;
+            color: #666;
+        }
+        .staff-page .poll a {
+            display: inline-block;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+        }
+        .staff-page .poll a:hover {
+            background-color: #0056b3;
+        }
+        .poll {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+        }
+        .poll h2 {
+            margin: 0 0 10px;
+        }
+        .poll p {
+            margin: 0 0 10px;
+        }
+        .poll a {
+            display: inline-block;
+            margin-right: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .poll a:hover {
+            background-color: #0056b3;
+        }
+
+        #pollsContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Adjust the 300px to suit your needs */
+            grid-gap: 10px; /* Adjust the 10px to suit your needs */
+            max-height: 600px; /* Adjust this value to suit your needs */
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="staff-page">
+        <!-- Add Poll Form -->
+        <div id="addPollForm">
+            <h2>Add Poll</h2>
+            <form id="newPollForm" action="create_poll.php" method="post">
+                <label for="newPollName">Poll Name:</label>
+                <input type="text" id="newPollName" name="name">
+                <label for="newPollDescription">Poll Description:</label>
+                <textarea id="newPollDescription" name="description"></textarea>
+                <label for="newPollOptions">Poll Options (separated by ';'):</label>
+                <input type="text" id="newPollOptions" name="options">
+                <label for="newPollQuorum">Poll Quorum:</label>
+                <input type="number" id="newPollQuorum" name="quorum">
+                <input type="submit" value="Add Poll">
+            </form>
+            <div id="message"></div>
+        </div>
+
+        <button class="logout-button" onclick="logout()">Logout</button>
+
+        <!-- Manage Existing Polls -->
+        <div id="manageExistingPolls">
+            <h2>Manage Existing Polls</h2>
+            <div id="pollsContainer"></div>
+        </div>
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script>
+
+            let userRole;
+
+            fetch('getRole.php')
+                .then(response => response.json())
+                .then(role => {
+                    userRole = role;
+                    // Now you can use userRole in your fetchPolls function
+                    fetchPolls();
+                });
+
+
+
+            $(document).ready(function() {
+                $('#newPollForm').on('submit', function(e) {
+                    e.preventDefault(); // Prevent the form from being submitted normally
+
+                    $.ajax({
+                        url: $(this).attr('action'), // The URL to send the request to
+                        type: $(this).attr('method'), // The HTTP method to use for the request
+                        data: $(this).serialize(), // The data to send to the server
+                        success: function(response) {
+                            // This function will be called when the request is successful
+                            var res = JSON.parse(response);
+                            if(res.status === 'success') {
+                                $('#message').text(res.message).show();
+                                setTimeout(function() {
+                                    $('#message').fadeOut('slow');
+                                }, 3000); // 3 seconds
+                                fetchPolls(); // Fetch the polls again
+                            } else {
+                                $('#message').text(res.message).show();
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            // This function will be called if the request fails
+                            $('#message').text('Error submitting form: ' + textStatus).show();
+                        }
+                    });
+                });
+            });
+
+            
+
+            function fetchPolls() {
+                fetch('getPolls.php?userRole=' + encodeURIComponent(userRole))
+                    .then(response => response.json())
+                    .then(polls => {
+                        const pollsContainer = document.getElementById('pollsContainer');
+                        pollsContainer.innerHTML = ''; // Clear the polls container
+                        polls.forEach(poll => {
+                            const pollDiv = document.createElement('div');
+                            pollDiv.id = 'poll-' + poll.id;
+                            pollDiv.className = 'poll grid-item';
+                            const options = poll.options.split(';');
+                            const totalVotes = options.reduce((total, option) => {
+                                const [optionName, votes] = option.split(' (');
+                                return total + parseInt(votes);
+                            }, 0);
+                            const optionsHTML = options.map(option => {
+                                const [optionName, votes] = option.split(' (');
+                                const voteCount = parseInt(votes);
+                                let percentage = '';
+                                if (voteCount > 0) {
+                                    percentage = ` (${(voteCount / totalVotes * 100).toFixed(2)}%)`;
+                                }
+                                return `<li>${optionName}: ${voteCount} votes${percentage}</li>`;
+                            }).join('');
+                            pollDiv.innerHTML = `
+                                <h2>${poll.name}</h2>
+                                <p>${poll.description}</p>
+                                <p>Quorum: ${poll.quorum}</p>
+                                <ul>${optionsHTML}</ul>
+                                <a href="editPoll.php?pollId=${poll.id}">Edit</a>
+                            `;
+                            pollsContainer.appendChild(pollDiv);
+                        });
+                    });
+            }
+
+            function logout() {
+            // Redirect to the logout page or perform any other logout actions
+            window.location.href = 'logout.php';
+        }
+
+            fetchPolls(); // Fetch the polls when the page loads
+        </script>
+    </div>
+</body>
+</html>
